@@ -1,0 +1,75 @@
+/* Text uses amber ink in light mode; yellow remains on decorative/filled surfaces. */
+:focus-visible, button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, [tabindex]:focus-visible { outline: 3px solid var(--focus); outline-offset: 4px; }
+.menu-overlay :focus-visible { outline-color: var(--accent-on-inverse); }
+.menu-overlay__link:hover .menu-overlay__label,
+.menu-overlay__link:focus-visible .menu-overlay__label { color: var(--accent-on-inverse); }
+.menu-overlay__close, .menu-overlay__num { opacity: 1; }
+.lightbox :focus-visible { outline-color: #FFCD21; }
+.lightbox button { min-width: 44px; min-height: 44px; }
+.nav__theme-btn, .nav__menu-btn, .menu-overlay__close { min-width: 44px; min-height: 44px; }
+.case-nav__back { min-height: 44px; }
+.cs__label { font-size: .8125rem; letter-spacing: .13em; line-height: 1.6; flex-wrap: wrap; }
+.nav__link, .editorial-hero__role, .editorial-hero__action button,
+.case-card__cat, .case-card__metric-lbl, .case-hero__cat,
+.case-hero__m-lbl, .case-hero__m-label, .about__label, .about__exp-label,
+.contact__label, .footer__role, .footer__copy, .insight__tag, .concept__tag,
+.res-table th, .story-meta dt, .story-prototype__eyebrow, .story-files__label,
+.story-figure__hint, .story-figure figcaption, .story-files figcaption,
+.story-prototype__note, .story-prototype__screen-label, .story-prototype__toolbar button,
+.story-files code { font-size: .75rem; line-height: 1.6; }
+.editorial-hero__role { font-weight: 500; }
+.cs__body, .story-section__body, .story-header__lead, .about__body,
+.case-card__tagline, .case-hero__tagline, .learning__body { font-size: 1rem; line-height: 1.8; }
+p, figcaption, .story-meta dd { overflow-wrap: anywhere; }
+.story-prototype__toolbar button { min-height: 44px; }
+.story-files pre:focus-visible { outline-offset: 3px; }
+.editorial-hero { height: max(clamp(660px, 55.3vw, 940px), var(--hero-min-height, 0px)); }
+@media (min-width: 769px) and (max-width: 1100px) {
+  .editorial-hero { height: max(690px, var(--hero-min-height, 0px)); }
+  .editorial-hero__intro { top: 48%; }
+}
+@media (max-width: 768px) {
+  /* Keep text and CTA in normal flow so larger text cannot collide. */
+  .editorial-hero { height: auto; min-height: 820px; }
+  .editorial-hero__intro { position: relative; top: auto; left: auto; width: auto; max-width: 600px; margin: calc(var(--hero-visual-anchor, 320px) + 48px) 7% 0; }
+  .editorial-hero__action { position: relative; inset: auto; transform: none; margin: 32px 7% 64px; text-align: left; }
+  .story-prototype__heading { min-width: 0; }
+}
+@media (max-width: 480px) {
+  .editorial-hero__intro { margin-top: calc(var(--hero-visual-anchor, 299px) + 42px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .page-enter, .menu-overlay, .lightbox { animation: none !important; }
+  *, *::before, *::after { transition-duration: .01ms !important; }
+  .case-card__link:hover .case-card__cover img { transform: none; }
+}
+@media (forced-colors: active) {
+  :focus-visible { outline-color: Highlight; }
+}
+
+/* Neutral text with yellow accents: keep reading contrast and brand details separate. */
+.nav__name span { color: var(--accent); }
+.about__exp { display: inline-block; padding-bottom: 2px; margin-bottom: 14px; border-bottom: 6px solid var(--accent); }
+.case-card__title { color: var(--accent-ink); }
+.case-card__link:hover .case-card__title,
+.case-card__link:focus-visible .case-card__title {
+  color: var(--accent-ink);
+  text-decoration-line: underline;
+  text-decoration-color: var(--accent);
+  text-decoration-thickness: 3px;
+  text-underline-offset: .15em;
+  text-decoration-skip-ink: auto;
+}
+
+
+.headline-highlight {
+  display: inline-block;
+  padding: .02em .1em .08em;
+  background: var(--accent);
+  color: #242019;
+  line-height: 1.12;
+  font-style: normal;
+  text-decoration: none;
+  vertical-align: baseline;
+}

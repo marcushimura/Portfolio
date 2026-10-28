@@ -1,17 +1,47 @@
 // portfolio-components.jsx
 const { useState, useEffect, useRef } = React;
 
+function useDialogFocus(active, rootRef, onClose) {
+  const closeRef = useRef(onClose);
+  closeRef.current = onClose;
+  useEffect(() => {
+    if (!active || !rootRef.current) return;
+    const root = rootRef.current;
+    const previous = document.activeElement;
+    const previousOverflow = document.body.style.overflow;
+    const controls = () => Array.from(root.querySelectorAll('button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')).filter(el => el.getClientRects().length > 0);
+    document.body.style.overflow = 'hidden';
+    (controls()[0] || root).focus();
+    const onKeyDown = event => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        event.stopPropagation();
+        closeRef.current();
+      } else if (event.key === 'Tab') {
+        const items = controls();
+        const first = items[0], last = items[items.length - 1];
+        if (!first) { event.preventDefault(); root.focus(); return; }
+        if (event.shiftKey && (document.activeElement === first || !root.contains(document.activeElement))) { event.preventDefault(); last.focus(); }
+        else if (!event.shiftKey && (document.activeElement === last || !root.contains(document.activeElement))) { event.preventDefault(); first.focus(); }
+      }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+      document.body.style.overflow = previousOverflow;
+      if (previous && previous.isConnected && typeof previous.focus === 'function') previous.focus();
+    };
+  }, [active, rootRef]);
+}
+
 function Lightbox({ src, alt, onClose }) {
   const [scale, setScale] = useState(1);
   const [pos, setPos] = useState({ x: 0, y: 0 });
   const [dragging, setDragging] = useState(false);
   const dragStart = useRef(null);
 
-  useEffect(() => {
-    const fn = (e) => e.key === 'Escape' && onClose();
-    window.addEventListener('keydown', fn);
-    return () => window.removeEventListener('keydown', fn);
-  }, []);
+  const dialogRef = useRef(null);
+  useDialogFocus(true, dialogRef, onClose);
 
   const handleWheel = (e) => {
     e.preventDefault();
@@ -30,7 +60,7 @@ function Lightbox({ src, alt, onClose }) {
   const reset = () => {setScale(1);setPos({ x: 0, y: 0 });};
 
   return (
-    <div onClick={scale === 1 ? onClose : undefined}
+    <div ref={dialogRef} className="lightbox" role="dialog" aria-modal="true" aria-label={`Imagem ampliada: ${alt}`} tabIndex={-1} onClick={scale === 1 ? onClose : undefined}
     onWheel={handleWheel}
     onMouseDown={handleMouseDown}
     onMouseMove={handleMouseMove}
@@ -45,7 +75,7 @@ function Lightbox({ src, alt, onClose }) {
       userSelect: 'none'
     }}>
       {/* close */}
-      <button onClick={onClose} style={{
+      <button aria-label="Fechar imagem ampliada" onClick={onClose} style={{
         position: 'absolute', top: '1.5rem', right: '1.5rem',
         color: '#fff', opacity: 0.6, fontSize: '1.4rem',
         background: 'none', border: 'none', cursor: 'pointer', zIndex: 2
@@ -56,7 +86,7 @@ function Lightbox({ src, alt, onClose }) {
         display: 'flex', gap: '0.5rem', zIndex: 2
       }}>
         {[{ label: '−', delta: -0.5 }, { label: '+', delta: 0.5 }].map(({ label, delta }) =>
-        <button key={label} onClick={(e) => {e.stopPropagation();zoom(delta);}} style={{
+        <button key={label} aria-label={delta > 0 ? 'Aumentar imagem' : 'Diminuir imagem'} onClick={(e) => {e.stopPropagation();zoom(delta);}} style={{
           width: '36px', height: '36px', border: '1px solid rgba(255,255,255,0.3)',
           background: 'rgba(255,255,255,0.1)', color: '#fff', fontSize: '1.1rem',
           cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center'
@@ -64,9 +94,9 @@ function Lightbox({ src, alt, onClose }) {
         )}
         <button onClick={(e) => {e.stopPropagation();reset();}} style={{
           padding: '0 1rem', height: '36px', border: '1px solid rgba(255,255,255,0.3)',
-          background: 'rgba(255,255,255,0.1)', color: '#fff', fontSize: '0.72rem',
+          background: 'rgba(255,255,255,0.1)', color: '#fff', fontSize: '0.75rem',
           letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer'
-        }}>Reset</button>
+        }}>Restaurar zoom</button>
       </div>
       <img src={src} alt={alt}
       onClick={(e) => e.stopPropagation()}
@@ -113,6 +143,8 @@ function ImgPh({ label, height = 380 }) {
 function Nav({ onNavigate, onScrollTo, darkMode, onToggleDark }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const menuRef = useRef(null);
+  useDialogFocus(menuOpen, menuRef, () => setMenuOpen(false));
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 20);
     window.addEventListener('scroll', fn, { passive: true });
@@ -128,22 +160,22 @@ function Nav({ onNavigate, onScrollTo, darkMode, onToggleDark }) {
 
   return (
     <>
-      <nav className={`nav${scrolled ? ' nav--scrolled' : ''}`}>
+      <nav aria-label="Navegação principal" className={`nav${scrolled ? ' nav--scrolled' : ''}`}>
         <button className="nav__name" onClick={() => onNavigate('home')}>Marcus<span>.</span></button>
         <div className="nav__links">
           {links.map((l) => <button key={l.id} className="nav__link" onClick={() => go(l.id)}>{l.label}</button>)}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <button className="nav__theme-btn" onClick={onToggleDark} title={darkMode ? 'Modo claro' : 'Modo escuro'}>
+          <button className="nav__theme-btn" onClick={onToggleDark} aria-label={darkMode ? 'Ativar modo claro' : 'Ativar modo escuro'} title={darkMode ? 'Modo claro' : 'Modo escuro'}>
             {darkMode ? '☀' : '☾'}
           </button>
-          <button className="nav__menu-btn" onClick={() => setMenuOpen(true)}>☰</button>
+          <button className="nav__menu-btn" aria-controls="portfolio-menu" aria-haspopup="dialog" aria-label="Abrir menu" aria-expanded={menuOpen} onClick={() => setMenuOpen(true)}>☰</button>
         </div>
       </nav>
 
       {menuOpen &&
-      <div className="menu-overlay">
-          <button className="menu-overlay__close" onClick={() => setMenuOpen(false)}>✕</button>
+      <div ref={menuRef} id="portfolio-menu" className="menu-overlay" role="dialog" aria-modal="true" aria-label="Menu de navegação" tabIndex={-1}>
+          <button className="menu-overlay__close" aria-label="Fechar menu" onClick={() => setMenuOpen(false)}>✕</button>
           <div className="menu-overlay__links">
             {links.map((l, i) =>
           <button key={l.id} className="menu-overlay__link" onClick={() => go(l.id)}>
@@ -159,68 +191,146 @@ function Nav({ onNavigate, onScrollTo, darkMode, onToggleDark }) {
 
 }
 
-function Hero({ onScrollTo }) {
-  const { tagline } = window.PORTFOLIO_DATA;
-  return (
-    <section className="hero" id="top">
-      <div className="hero__top">
-        <div className="hero__text">
-          <div className="hero__deco-circle-sm" />
-          <div className="hero__greeting">Senior Product Designer · São Paulo · 15 anos</div>
-          <h1 className="hero__name">
-            Marcus<br /><em>Araújo</em>
-          </h1>
-        </div>
-        <div className="hero__photo-wrap">
-          <div className="hero__photo">
-            <img src="images/marcus-hero.png" alt="Marcus Araújo" />
-          </div>
-        </div>
-      </div>
-      <div className="hero__bottom">
-        <div>
-          <button className="hero__cta" onClick={() => onScrollTo('casos')}>
-            Ver casos <span>↓</span>
-          </button>
-        </div>
-        <p className="hero__tagline">{tagline}</p>
-      </div>
-    </section>);
+// Pointer motion runs only while a layer is settling; text and controls stay anchored.
+function attachHeroParallax(hero) {
+  const media = window.matchMedia('(min-width: 769px) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)');
+  let x = 0, y = 0, targetX = 0, targetY = 0, frame = 0, previousTime = 0;
+  const paint = time => {
+    const amount = 1 - Math.exp(-Math.min(previousTime ? time - previousTime : 16, 64) / 95);
+    previousTime = time;
+    x += (targetX - x) * amount;
+    y += (targetY - y) * amount;
+    const settled = Math.abs(targetX - x) + Math.abs(targetY - y) < .001;
+    if (settled) { x = targetX; y = targetY; }
+    hero.style.setProperty('--hero-pointer-x', x.toFixed(4));
+    hero.style.setProperty('--hero-pointer-y', y.toFixed(4));
+    frame = settled ? 0 : requestAnimationFrame(paint);
+    if (settled) previousTime = 0;
+  };
+  const schedule = () => { if (!frame) frame = requestAnimationFrame(paint); };
+  const move = event => {
+    if (!media.matches || event.pointerType !== 'mouse') return;
+    const box = hero.getBoundingClientRect();
+    targetX = Math.max(-1, Math.min(1, (event.clientX - box.left) / box.width * 2 - 1));
+    targetY = Math.max(-1, Math.min(1, (event.clientY - box.top) / box.height * 2 - 1));
+    schedule();
+  };
+  const reset = () => { targetX = 0; targetY = 0; schedule(); };
+  const preferenceChanged = () => {
+    cancelAnimationFrame(frame); frame = 0; previousTime = 0;
+    x = y = targetX = targetY = 0;
+    hero.style.removeProperty('--hero-pointer-x');
+    hero.style.removeProperty('--hero-pointer-y');
+  };
+  hero.addEventListener('pointermove', move, { passive: true });
+  hero.addEventListener('pointerleave', reset);
+  window.addEventListener('blur', reset);
+  media.addEventListener('change', preferenceChanged);
+  return () => {
+    hero.removeEventListener('pointermove', move);
+    hero.removeEventListener('pointerleave', reset);
+    window.removeEventListener('blur', reset);
+    media.removeEventListener('change', preferenceChanged);
+    preferenceChanged();
+  };
+}
 
+function Hero({ onScrollTo }) {
+  const heroRef = useRef(null);
+  const nameRef = useRef(null);
+  const portraitRef = useRef(null);
+  const introRef = useRef(null);
+
+  useEffect(() => attachHeroParallax(heroRef.current), []);
+
+  React.useLayoutEffect(() => {
+    const alignAction = () => {
+      if (!heroRef.current || !nameRef.current) return;
+      const mobile = window.matchMedia('(max-width: 768px)').matches;
+      if (!mobile && introRef.current) {
+        const topFraction = window.matchMedia('(max-width: 1100px)').matches ? .48 : .51;
+        const minHeight = Math.ceil((introRef.current.offsetHeight + 48) / (1 - topFraction));
+        heroRef.current.style.setProperty('--hero-min-height', `${minHeight}px`);
+      }
+      const heroBox = heroRef.current.getBoundingClientRect();
+      const portrait = portraitRef.current;
+      if (portrait && portrait.naturalWidth) {
+        const portraitBox = portrait.getBoundingClientRect();
+        const renderedHeight = Math.min(portraitBox.height, portraitBox.width * portrait.naturalHeight / portrait.naturalWidth);
+        const portraitTop = portraitBox.bottom - heroBox.top - renderedHeight;
+        const statementAnchor = window.matchMedia('(max-width: 768px)').matches ? .78 : .36;
+        heroRef.current.style.setProperty('--hero-visual-anchor', `${portraitTop + renderedHeight * statementAnchor}px`);
+
+      }
+      const nameBox = nameRef.current.getBoundingClientRect();
+      const opticalOffset = parseFloat(getComputedStyle(nameRef.current).fontSize) * .08;
+      heroRef.current.style.setProperty('--hero-name-center', `${nameBox.top - heroBox.top + nameBox.height / 2 + opticalOffset}px`);
+    };
+    const observer = new ResizeObserver(alignAction);
+    observer.observe(heroRef.current);
+    observer.observe(nameRef.current);
+    observer.observe(portraitRef.current);
+    observer.observe(introRef.current);
+    portraitRef.current.addEventListener('load', alignAction);
+    document.fonts.ready.then(alignAction);
+    alignAction();
+    const portrait = portraitRef.current;
+    return () => {
+      observer.disconnect();
+      portrait.removeEventListener('load', alignAction);
+    };
+  }, []);
+
+  return (
+    <section ref={heroRef} className="editorial-hero" id="top" aria-labelledby="hero-name">
+      <div className="editorial-hero__art" aria-hidden="true">
+        <img className="editorial-hero__disk" src="images/terracotta-disk.svg" alt="" />
+        <svg className="editorial-hero__ring" viewBox="0 0 200 200" fill="none" aria-hidden="true"><circle cx="100" cy="100" r="94"/><circle cx="100" cy="100" r="79"/><circle cx="100" cy="100" r="64"/></svg>
+        <svg className="editorial-hero__orbit" viewBox="0 0 180 180" fill="none" aria-hidden="true"><circle cx="90" cy="90" r="74"/><circle cx="90" cy="16" r="6" className="editorial-hero__orbit-dot"/></svg>
+        <svg className="editorial-hero__spark" viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M16 2v28M2 16h28"/></svg>
+        <img className="editorial-hero__asterisk" src="images/asterisk.svg" alt="" />
+      </div>
+      <img ref={portraitRef} className="editorial-hero__portrait" src="images/marcus-photo-bg.png" alt="Marcus Araújo" fetchPriority="high" />
+      <div className="editorial-hero__glass" aria-hidden="true" />
+      <div ref={introRef} className="editorial-hero__intro">
+        <p className="editorial-hero__role">Senior Product Designer</p>
+        <h1 ref={nameRef} id="hero-name">Marcus<br />Araújo</h1>
+        <hr className="editorial-hero__rule" aria-hidden="true" />
+        <p className="editorial-hero__tagline">Design que melhora a experiência e gera resultado.</p>
+      </div>
+      <div className="editorial-hero__action">
+        <button onClick={() => onScrollTo('casos')}>Ver cases <span aria-hidden="true">↓</span></button>
+      </div>
+    </section>
+  );
+}
+
+function getCaseCover(item) {
+  const covers = {
+    'link-pagamento': 'images/lp-cover-yellow.png',
+    'mapeamento-jornada-avon': 'images/avon-cover-yellow.png',
+    'novo-carrinho': 'images/carrinho-cover-yellow.png',
+    'setor-automotivo': 'images/auto-cover-yellow.png'
+  };
+  return item.cover || covers[item.id];
 }
 
 function CaseCard({ item, index, onClick }) {
-  const nums = ['01', '02', '03', '04'];
-  const covers = {
-    'link-pagamento': 'images/lp-cover.png',
-    'mapeamento-jornada-avon': 'images/avon-cover.png',
-    'novo-carrinho': 'images/carrinho-cover.png',
-    'setor-automotivo': 'images/auto-cover.png'
-  };
-  const cover = covers[item.id];
   return (
-    <article className="case-card" onClick={onClick} role="button" tabIndex={0}
-    onKeyDown={(e) => e.key === 'Enter' && onClick()}>
-      {cover &&
-      <div style={{ width: '100%', height: '220px', overflow: 'hidden', marginBottom: '2rem', marginTop: '-3.5rem', marginLeft: '-5vw', marginRight: '-5vw', width: 'calc(100% + 10vw)' }}>
-          <img src={cover} alt={item.title} style={{ width: '100%', objectFit: 'cover', objectPosition: 'center', display: 'block', height: "222px" }} />
-        </div>
-      }
-      <div className="case-card__num">{nums[index]}</div>
-      <h2 className="case-card__title">{item.title}</h2>
-      <div className="case-card__cat">{item.category} · {item.year}</div>
-      <p className="case-card__tagline">{item.tagline}</p>
-      <div className="case-card__metrics">
-        {item.metrics.map((m) =>
-        <div key={m.label}>
-            <div className="case-card__metric-val">{m.value}</div>
-            <div className="case-card__metric-lbl">{m.label}</div>
+    <article className="case-card">
+      <button className="case-card__link" onClick={onClick} aria-label={`Ver case: ${item.title}`}>
+        <div className="case-card__cover"><img src={getCaseCover(item)} alt={item.title} loading="lazy" /></div>
+        <div className="case-card__content">
+          <span className="case-card__num" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
+          <div className="case-card__intro">
+            <h2 className="case-card__title">{item.title}</h2>
+            <div className="case-card__cat">{item.category} · {item.year}</div>
+            <p className="case-card__tagline">{item.tagline}</p>
           </div>
-        )}
-      </div>
-      <span className="case-card__arrow">→</span>
-    </article>);
-
+        </div>
+      </button>
+    </article>
+  );
 }
 
 function CasesSection({ onCaseClick }) {
@@ -246,13 +356,14 @@ function AboutSection() {
       <RevealWrapper>
         <div className="about__label">Sobre</div>
         <h2 className="about__headline">
-          Design com<br />propósito<br /><em>&amp; resultado</em>
+          Design com<br />propósito<br />&amp; <span className="headline-highlight">resultado</span>
         </h2>
       </RevealWrapper>
       <RevealWrapper delay={120}>
         <span className="about__exp">15</span>
         <div className="about__exp-label">anos de experiência</div>
         <p className="about__body">{about}</p>
+        <a className="about__cv-link" href="downloads/Marcus_Araujo_CV.pdf" target="_blank" rel="noopener noreferrer">Ver currículo <span aria-hidden="true">↗</span></a>
       </RevealWrapper>
     </section>);
 
@@ -262,12 +373,11 @@ function ContactSection() {
   const { contact } = window.PORTFOLIO_DATA;
   return (
     <section className="contact" id="contato">
-      <div className="contact__deco-circle" />
-      <div className="contact__deco-inner" />
+      <img className="contact__graphic" src="images/asterisk.svg" alt="" aria-hidden="true" />
       <RevealWrapper>
         <div className="contact__label">Contato</div>
         <h2 className="contact__headline">
-          <em>Vamos</em><br />conversar?
+          Vamos<br /><span className="headline-highlight">conversar</span>?
         </h2>
       </RevealWrapper>
       <RevealWrapper delay={120}>
@@ -276,10 +386,15 @@ function ContactSection() {
           {contact.email}
           <span className="contact__link-arrow">→</span>
         </a>
-        <a href={`tel:+55${contact.phone.replace(/\D/g, '')}`} className="contact__link">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, opacity: 0.5 }}><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.65 3.18 2 2 0 0 1 3.62 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.69a16 16 0 0 0 6.29 6.29l1.06-.86a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" /></svg>
+        <a href={`https://wa.me/55${contact.phone.replace(/\D/g, '')}`} className="contact__link" target="_blank" rel="noopener noreferrer" aria-label={`Conversar pelo WhatsApp: ${contact.phone}`}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style={{ flexShrink: 0, opacity: 0.5 }}><path d="M20.52 3.48A11.9 11.9 0 0 0 12.05 0C5.47 0 .12 5.35.12 11.93c0 2.1.55 4.15 1.6 5.96L0 24l6.26-1.64a11.94 11.94 0 0 0 5.79 1.48h.01C18.64 23.84 24 18.49 24 11.91c0-3.18-1.24-6.17-3.48-8.43ZM12.06 21.82a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.72.98.99-3.63-.24-.37a9.87 9.87 0 0 1-1.51-5.28c0-5.47 4.45-9.92 9.93-9.92a9.85 9.85 0 0 1 7.01 2.91 9.85 9.85 0 0 1 2.9 7.01c0 5.46-4.45 9.89-9.97 9.89Zm5.44-7.41c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.48-.89-.79-1.49-1.76-1.66-2.06-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.8.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.22 3.08c.15.2 2.1 3.2 5.09 4.49.71.3 1.27.48 1.7.62.71.22 1.36.19 1.87.11.57-.09 1.76-.72 2.01-1.42.25-.69.25-1.29.17-1.41-.07-.13-.27-.2-.57-.35Z"/></svg>
           {contact.phone}
           <span className="contact__link-arrow">→</span>
+        </a>
+        <a href="https://www.linkedin.com/in/marcushimura/" className="contact__link" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn de Marcus Araújo">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style={{ flexShrink: 0, opacity: 0.5 }}><path d="M20.45 2H3.55C2.69 2 2 2.68 2 3.52v16.96c0 .84.69 1.52 1.55 1.52h16.9c.86 0 1.55-.68 1.55-1.52V3.52c0-.84-.69-1.52-1.55-1.52ZM7.93 18.75H4.98V9.2h2.95v9.55ZM6.45 7.9a1.71 1.71 0 1 1 0-3.42 1.71 1.71 0 0 1 0 3.42Zm12.3 10.85H15.8v-4.64c0-1.11-.02-2.53-1.54-2.53-1.55 0-1.79 1.21-1.79 2.45v4.72H9.52V9.2h2.83v1.3h.04c.39-.74 1.36-1.53 2.8-1.53 2.99 0 3.56 1.97 3.56 4.53v5.25Z"/></svg>
+          LinkedIn
+          <span className="contact__link-arrow">↗</span>
         </a>
       </RevealWrapper>
     </section>);
@@ -289,7 +404,7 @@ function ContactSection() {
 function Footer() {
   return (
     <footer className="footer">
-      <span className="footer__copy">© 2025 Marcus Araújo · Construído com Figma + Claude ♥</span>
+      <span className="footer__copy">© 2026 Marcus Araújo · Construído com Codex ♥</span>
       <span className="footer__role">Senior Product Designer</span>
     </footer>);
 
@@ -308,6 +423,6 @@ function HomePage({ onCaseClick, onScrollTo }) {
 }
 
 Object.assign(window, {
-  RevealWrapper, ImgPh, Nav, Hero, Lightbox,
+  RevealWrapper, ImgPh, Nav, Hero, Lightbox, getCaseCover,
   CasesSection, AboutSection, ContactSection, Footer, HomePage
 });

@@ -2,13 +2,13 @@
 const { useState, useEffect, useRef } = React;
 
 const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
-  "accent": "#fda228",
+  "accent": "#FFCD21",
   "darkMode": false,
   "fontStyle": "serif"
 }/*EDITMODE-END*/;
 
 function TweaksPanel({ tweaks, onUpdate }) {
-  const accents = ['#fda228', '#e05f3a', '#3b7dd8', '#5c9e6b', '#9b5fc0', '#c0416e'];
+  const accents = ['#FFCD21', '#e05f3a', '#3b7dd8', '#5c9e6b', '#9b5fc0', '#c0416e'];
   return (
     <div className="tweaks-panel">
       <div className="tweaks-title">Tweaks</div>
@@ -67,7 +67,6 @@ function App() {
     localStorage.setItem('pf_dark', next);
     // sync with tweaks
     setTweaks(prev => ({ ...prev, darkMode: next }));
-    window.parent.postMessage({ type: '__edit_mode_set_keys', edits: { darkMode: next } }, '*');
   };
 
   // Apply tweaks to CSS
@@ -75,8 +74,8 @@ function App() {
     document.documentElement.style.setProperty('--accent', tweaks.accent);
     const isDark = darkMode || tweaks.darkMode;
     document.documentElement.setAttribute('data-dark', isDark ? 'true' : 'false');
-    const serif = "'Cormorant Garamond', Georgia, serif";
-    const grotesk = "'Space Grotesk', sans-serif";
+    const serif = "'Bodoni Moda', Georgia, serif";
+    const grotesk = "'DM Sans', sans-serif";
     document.documentElement.style.setProperty(
       '--font-display', tweaks.fontStyle === 'grotesque' ? grotesk : serif
     );
@@ -89,23 +88,22 @@ function App() {
       if (e.data?.type === '__deactivate_edit_mode') setTweaksOpen(false);
     };
     window.addEventListener('message', handler);
-    window.parent.postMessage({ type: '__edit_mode_available' }, '*');
     return () => window.removeEventListener('message', handler);
   }, []);
 
   const updateTweak = (key, value) => {
     setTweaks(prev => ({ ...prev, [key]: value }));
-    window.parent.postMessage({ type: '__edit_mode_set_keys', edits: { [key]: value } }, '*');
   };
 
   const scrollToSection = (id) => {
     const el = document.getElementById(id);
     if (!el) return;
     const top = el.getBoundingClientRect().top + window.scrollY - 80;
-    window.scrollTo({ top, behavior: 'smooth' });
+    window.scrollTo({ top, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
   };
 
   const navigate = (type, scrollTarget = null, caseId = null) => {
+    if (scrollTarget && page.type === type) { scrollToSection(scrollTarget); return; }
     if (scrollTarget) pendingScroll.current = scrollTarget;
     setPage({ type, caseId });
   };

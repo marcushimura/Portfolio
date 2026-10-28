@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sensedia Button</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
+<style>
+*,::before,::after{box-sizing:border-box;border-width:0;border-style:solid;font-family:"Inter",sans-serif;line-height:1.4;letter-spacing:.1px}
+body{margin:0;padding:24px;background:#fff;color:#1c1c1c}
+.example{display:flex;flex-wrap:wrap;gap:16px;align-items:center;margin-bottom:24px}
+/* Recreation CSS — components-design/button.md */
+.sds-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  position: relative;
+  width: fit-content;
+  height: 40px;
+  min-width: 40px;
+  max-height: 40px;
+  padding: 8px 20px;
+  border: 1px solid #792fad;
+  border-radius: 8px;
+  outline: none;
+  vertical-align: middle;
+  flex-shrink: 0;
+  text-align: center;
+  font-family: "Inter", sans-serif;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 140%;
+  letter-spacing: 0.2px;
+  transition-duration: 300ms;
+  transition-timing-function: ease;
+  transition-property: background-color, border-color, box-shadow;
+}
+
+.sds-button[data-visible="false"] {
+  visibility: hidden;
+}
+
+.sds-button--xs {
+  height: 24px;
+  min-width: 24px;
+  max-height: 24px;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.sds-button--xs > svg {
+  width: 10px !important;
+  margin: unset;
+}
+
+.sds-button--sm {
+  height: 32px;
+  min-width: 32px;
+  max-height: 32px;
+  padding: 4px 16px;
+  border-radius: 6px;
+}
+
+.sds-button--md {
+  height: 40px;
+  min-width: 40px;
+  max-height: 40px;
+  padding: 8px 20px;
+  border-radius: 8px;
+}
+
+.sds-button--lg {
+  height: 48px;
+  min-width: 40px;
+  max-height: 48px;
+  padding: 8px 20px;
+  border-radius: 8px;
+}
+
+.sds-button--icon {
+  padding: 0;
+  width: 40px;
+}
+
+.sds-button--icon.sds-button--xs {
+  width: 24px;
+}
+
+.sds-button--icon.sds-button--sm {
+  width: 32px;
+}
+
+.sds-button--icon.sds-button--md {
+  width: 40px;
+}
+
+.sds-button--icon.sds-button--lg {
+  width: 48px;
+  min-width: 48px;
+}
+
+.sds-button--icon svg {
+  margin: unset;
+}
+
+.sds-button--contained {
+  background-color: #792fad;
+  border-color: #792fad;
+  color: #ffffff;
+}
+
+.sds-button--contained:hover {
+  background-color: #492164;
+  border-color: #492164;
+}
+
+.sds-button--contained:active,
+.sds-button--contained[data-pressed],
+.sds-button--contained[aria-expanded="true"] {
+  background-color: #321943;
+  border-color: #321943;
+}
+
+.sds-button--contained:focus-visible {
+  background-color: #792fad;
+  border-color: #792fad;
+  outline: 2px solid #792fad;
+  outline-offset: 2px;
+}
+
+.sds-button--contained:disabled,
+.sds-button--contained[aria-disabled="true"] {
+  cursor: not-allowed;
+  background-color: #d4d4d4;
+  border-color: #d4d4d4;
+}
+
+.sds-button--outlined {
+  background-color: transparent;
+  border-color: #792fad;
+  color: #792fad;
+}
+
+.sds-button--outlined:hover {
+  background-color: #492164;
+  border-color: #492164;
+  color: #ffffff;
+}
+
+.sds-button--outlined:active,
+.sds-button--outlined[data-pressed],
+.sds-button--outlined[aria-expanded="true"] {
+  background-color: #321943;
+  border-color: #321943;
+  color: #ffffff;
+}
+
+.sds-button--outlined:focus-visible {
+  background-color: transparent;
+  border-color: #792fad;
+  color: #792fad;
+  outline: 2px solid #792fad;
+  outline-offset: 2px;
+}
+
+.sds-button--outlined:disabled,
+.sds-button--outlined[aria-disabled="true"] {
+  cursor: not-allowed;
+  background-color: transparent;
+  border-color: #d4d4d4;
+  color: #d4d4d4;
+}
+
+.sds-button--text {
+  background-color: transparent;
+  border-color: transparent;
+  color: #792fad;
+}
+
+.sds-button--text:hover {
+  background-color: #f1e7f6;
+}
+
+.sds-button--text:active,
+.sds-button--text[data-pressed] {
+  background-color: #e3d0ed;
+}
+
+.sds-button--text[aria-expanded="true"] {
+  background-color: #321943;
+  color: #792fad;
+}
+
+.sds-button--text:focus-visible {
+  background-color: transparent;
+  color: #792fad;
+  outline: 2px solid #792fad;
+  outline-offset: 2px;
+}
+
+.sds-button--text:disabled,
+.sds-button--text[aria-disabled="true"] {
+  cursor: not-allowed;
+  background-color: transparent;
+  color: #d4d4d4;
+}
+
+.sds-button--ghost {
+  background-color: transparent;
+  border-color: transparent;
+  color: #474747;
+}
+
+.sds-button--ghost:hover {
+  background-color: #f1f1f1;
+  border-color: #f1f1f1;
+}
+
+.sds-button--ghost:active,
+.sds-button--ghost[data-pressed],
+.sds-button--ghost[aria-expanded="true"] {
+  background-color: #d4d4d4;
+  border-color: #d4d4d4;
+}
+
+.sds-button--ghost:focus-visible {
+  background-color: transparent;
+  border-color: #d4d4d4;
+  outline: 2px solid #474747;
+  outline-offset: 2px;
+}
+
+.sds-button--ghost:disabled,
+.sds-button--ghost[aria-disabled="true"] {
+  cursor: not-allowed;
+  background-color: transparent;
+  border-color: transparent;
+  color: #d4d4d4;
+}
+
+.sds-button--destructive {
+  background-color: transparent;
+  border-color: transparent;
+  color: #8c1b1a;
+}
+
+.sds-button--destructive:hover {
+  background-color: #fef4f4;
+}
+
+.sds-button--destructive:active,
+.sds-button--destructive[data-pressed],
+.sds-button--destructive[aria-expanded="true"] {
+  background-color: #f9c2c2;
+}
+
+.sds-button--destructive:focus-visible {
+  outline: 2px solid #8c1b1a;
+  outline-offset: 2px;
+}
+
+.sds-button--destructive:disabled,
+.sds-button--destructive[aria-disabled="true"] {
+  cursor: not-allowed;
+  background-color: transparent;
+  color: #d4d4d4;
+}
+
+.sds-button--unstyled {
+  padding: 0;
+  background-color: transparent;
+  border-color: transparent;
+  color: #792fad;
+}
+
+.sds-button__loader {
+  position: absolute;
+  display: inline-flex;
+  width: 32px;
+  height: 32px;
+  align-items: center;
+  justify-content: center;
+}
+
+.sds-button__spinner {
+  width: 100%;
+  height: 100%;
+  border: 3px solid transparent;
+  border-top: 3px solid #792fad;
+  border-radius: 90%;
+  animation: sds-button-spin 1.2s ease infinite;
+}
+
+.sds-button--contained .sds-button__spinner {
+  border-top-color: #ffffff;
+}
+
+@keyframes sds-button-spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.sds-button-group {
+  display: flex;
+  width: max-content;
+  flex-direction: row;
+}
+
+.sds-button-group--vertical {
+  flex-direction: column;
+}
+
+.sds-button-group--vertical .sds-button {
+  margin: 0;
+}
+
+.sds-button-group--vertical .sds-button + .sds-button {
+  margin-top: 2px;
+}
+</style>
+</head>
+<body>
+<!-- Static HTML Examples — components-design/button.md -->
+<button class="sds-button sds-button--contained sds-button--md" type="button">
+  Default contained
+</button>
+
+<button class="sds-button sds-button--outlined sds-button--sm" type="button">
+  Outlined
+</button>
+
+<button class="sds-button sds-button--text sds-button--md" type="button">
+  Text
+</button>
+
+<button class="sds-button sds-button--ghost sds-button--md" type="button">
+  Ghost
+</button>
+
+<button class="sds-button sds-button--destructive sds-button--md" type="button">
+  Delete
+</button>
+
+<button
+  class="sds-button sds-button--contained sds-button--md sds-button--icon"
+  type="button"
+  aria-label="Home"
+>
+  <svg aria-hidden="true" width="18" height="18" viewBox="0 0 18 18">
+    <path fill="currentColor" d="M9 2 2 8h2v7h4v-4h2v4h4V8h2L9 2Z" />
+  </svg>
+</button>
+
+<button class="sds-button sds-button--contained sds-button--md" type="button">
+  <span class="sds-button__loader" aria-hidden="true">
+    <span class="sds-button__spinner"></span>
+  </span>
+  Loading
+</button>
+<script>if(new URLSearchParams(location.search).get('preview')==='1'){document.body.inert=true;document.documentElement.style.scrollbarWidth='none';}</script></body>
+</html>
