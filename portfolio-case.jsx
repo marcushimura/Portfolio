@@ -607,7 +607,7 @@ function NarrativeCase({ item, onBack, darkMode, onToggleDark }) {
 
 function CasePage({ caseId, onBack, darkMode, onToggleDark }) {
   const item = window.PORTFOLIO_DATA.cases.find((c) => c.id === caseId);
-  useEffect(() => {window.scrollTo(0, 0);}, [caseId]);
+  React.useLayoutEffect(() => { window.scrollTo({ top: 0, left: 0, behavior: 'instant' }); }, [caseId]);
   if (!item) return null;
   if (item.story) return <NarrativeCase item={item} onBack={onBack} darkMode={darkMode} onToggleDark={onToggleDark} />;
 
