@@ -199,7 +199,8 @@
 /* Frosted navigation: a stable tinted surface keeps text readable over imagery. */
 .nav,
 .nav:not(.nav--scrolled),
-.nav.nav--scrolled {
+.nav.nav--scrolled,
+.case-nav {
   background: rgb(255 255 255 / .76);
   -webkit-backdrop-filter: blur(22px) saturate(160%);
   backdrop-filter: blur(22px) saturate(160%);
@@ -213,19 +214,21 @@
 .nav .nav__link:hover { color: var(--fg); }
 [data-dark="true"] .nav,
 [data-dark="true"] .nav:not(.nav--scrolled),
-[data-dark="true"] .nav.nav--scrolled {
+[data-dark="true"] .nav.nav--scrolled,
+[data-dark="true"] .case-nav {
   background: rgb(19 17 16 / .8);
   border-bottom-color: rgb(255 255 255 / .12);
   box-shadow: 0 1px 0 rgb(0 0 0 / .18), inset 0 1px 0 rgb(255 255 255 / .08);
 }
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .nav, .nav:not(.nav--scrolled), .nav.nav--scrolled { background: #ffffff; }
+  .nav, .nav:not(.nav--scrolled), .nav.nav--scrolled, .case-nav { background: #ffffff; }
   [data-dark="true"] .nav,
   [data-dark="true"] .nav:not(.nav--scrolled),
-  [data-dark="true"] .nav.nav--scrolled { background: #131110; }
+  [data-dark="true"] .nav.nav--scrolled,
+  [data-dark="true"] .case-nav { background: #131110; }
 }
 @media (prefers-reduced-transparency: reduce) {
-  .nav, .nav:not(.nav--scrolled), .nav.nav--scrolled {
+  .nav, .nav:not(.nav--scrolled), .nav.nav--scrolled, .case-nav {
     background: var(--bg) !important;
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
