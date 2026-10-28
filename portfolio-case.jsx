@@ -424,7 +424,12 @@ async function loadInterfacePreview(src, signal) {
   const adapted = source.replaceAll('new URLSearchParams(location.search)', `new URLSearchParams(${JSON.stringify(url.search)})`);
   const base = `<base href="${url.href.replaceAll('&', '&amp;').replaceAll('"', '&quot;')}">`;
   const inert = '<script>document.body.inert = true;<\/script>';
-  return adapted.replace(/<head>/i, '<head>' + base).replace(/<\/body>/i, inert + '</body>');
+  // These frames are visual previews. Initial navigation inside the prototype must
+  // never focus or scroll an element and pull the enclosing case down the page.
+  const previewGuard = '<script>HTMLElement.prototype.focus = function() {}; Element.prototype.scrollIntoView = function() {};<\/script>';
+  return adapted.replace(/<head>/i, '<head>' + base + previewGuard)
+    .replace(/<body\b/i, '<body inert')
+    .replace(/<\/body>/i, inert + '</body>');
 }
 
 function InterfaceFigure({ image }) {
