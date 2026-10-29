@@ -1,0 +1,12 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "buildCommand": "node build.cjs && node deployment/build-public.cjs",
+  "outputDirectory": "public",
+  "functions": {
+    "api/**/*.js": {
+      "maxDuration": 30,
+      "includeFiles": "{backend/**,portfolio-data.js,portfolio-spend-data.js,portfolio-origami-data.js}"
+    }
+  }
+}

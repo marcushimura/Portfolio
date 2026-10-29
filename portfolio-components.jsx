@@ -414,6 +414,7 @@ function HomePage({ onCaseClick, onScrollTo }) {
   return (
     <div className="page-enter">
       <Hero onScrollTo={onScrollTo} />
+      <PortfolioGuide onCaseClick={onCaseClick} />
       <CasesSection onCaseClick={onCaseClick} />
       <AboutSection />
       <ContactSection />

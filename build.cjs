@@ -1,7 +1,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const Babel = require('./vendor/babel.min.js');
-const files = ['portfolio-components.jsx', 'origami-components.jsx', 'portfolio-case.jsx', 'portfolio-app.jsx'];
+const files = ['portfolio-guide.jsx', 'portfolio-components.jsx', 'origami-components.jsx', 'portfolio-case.jsx', 'portfolio-app.jsx'];
 const output = files.map(file => {
   const source = fs.readFileSync(path.join(__dirname, file), 'utf8');
   return Babel.transform(`(function () {\n${source}\n})();`, {
