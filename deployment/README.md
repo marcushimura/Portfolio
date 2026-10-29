@@ -17,3 +17,14 @@ Estado: preparação para revisão, ainda não ativada em produção.
 6. Definir URL da API no frontend; aprovar e integrar a branch somente após testes no preview.
 
 A configuração global temporária do CLI ficou em /tmp/portfolio-vercel-config; não versionar seu conteúdo. O login encontrou bloqueio de rede para api.vercel.com nesta sessão. A autorização no navegador não comprova que o CLI recebeu uma credencial.
+
+
+## Atualização: limites compartilhados
+
+A função Vercel só habilita a IA quando um Redis REST está configurado, além da chave Groq. Variáveis aceitas: KV_REST_API_URL + KV_REST_API_TOKEN ou UPSTASH_REDIS_REST_URL + UPSTASH_REDIS_REST_TOKEN. Conectar Upstash Redis pelo Marketplace da Vercel aos ambientes Preview e Production injeta essas variáveis.
+
+O contador atômico limita a 50 chamadas/dia por ambiente e seis por cliente/minuto em janelas fixas. Falha do Redis impede chamada ao provedor. O limite local de três consultas simultâneas continua sendo por instância. Não são armazenadas perguntas, respostas ou IP bruto. Contadores têm expiração automática.
+
+A URL estável da API foi definida no frontend para GitHub Pages. Páginas na Vercel usam a API na mesma origem. A allowlist inclui os domínios conhecidos e a URL fornecida pela própria Vercel para o deployment; GUIDE_ALLOWED_ORIGINS permite substituição explícita.
+
+Pendente: conectar Redis, gerar novo deploy com as variáveis e validar no preview autenticado. Segredo Groq cadastrado pelo usuário, ainda sem confirmação externa de funcionamento.

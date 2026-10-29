@@ -1,6 +1,6 @@
 const {loadKnowledge,selectKnowledge}=require('./knowledge.cjs');
 const normalize=s=>s.normalize('NFKC').replace(/[\u2010-\u2015\u2212]/g,'-').replace(/\s+/g,' ').trim().replace(/^["“”«»]+|["“”«»]+$/g,'');
-function createGuideHandler({env=process.env,fetchImpl=fetch,knowledge=loadKnowledge(),now=()=>Date.now(),timeoutMs=20000}={}){
+function createGuideHandler({env=process.env,fetchImpl=fetch,knowledge=loadKnowledge(),now=()=>Date.now(),timeoutMs=20000,consumeQuota=null}={}){
  const allowed=new Set((env.GUIDE_ALLOWED_ORIGINS||'http://localhost:4173,http://127.0.0.1:4173').split(',').map(x=>x.trim()).filter(Boolean));
  const key=env.GROQ_API_KEY,model=env.GROQ_MODEL||'openai/gpt-oss-20b';
  const configured=Boolean(key&&model),limits=new Map();let day='',daily=0,active=0;
@@ -27,6 +27,11 @@ function createGuideHandler({env=process.env,fetchImpl=fetch,knowledge=loadKnowl
   for(const [ip,bucket] of limits)if(now()-bucket.start>=60000)limits.delete(ip);
   const ip=req.socket.remoteAddress||'local',bucket=limits.get(ip)||{start:now(),count:0};
   if(bucket.count>=6||daily>=dailyMax||active>=3){safeError(res,429,'Limite de consultas atingido. Tente novamente mais tarde.',origin);return true;}
+  if(consumeQuota){
+   try{if(!await consumeQuota(ip)){safeError(res,429,'Limite de consultas atingido. Tente novamente mais tarde.',origin);return true;}}
+   catch{safeError(res,503,'A IA está temporariamente indisponível. Consulte os cases ou tente novamente.',origin);return true;}
+  }
+  if(active>=3){safeError(res,429,'Limite de consultas atingido. Tente novamente mais tarde.',origin);return true;}
   bucket.count++;limits.set(ip,bucket);daily++;active++;
   const abort=new AbortController(),timer=setTimeout(()=>abort.abort(),timeoutMs);
   const disconnected=()=>{if(!res.writableEnded)abort.abort();};res.on('close',disconnected);
