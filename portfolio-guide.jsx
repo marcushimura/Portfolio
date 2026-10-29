@@ -97,11 +97,11 @@ function PortfolioGuide({ onCaseClick }) {
   };
   const field = suffix => <form className="portfolio-guide__form" onSubmit={event=>{event.preventDefault();ask(question);}}>
     <label className="portfolio-guide__sr" htmlFor={'guide-question-'+suffix}>O que você gostaria de saber sobre meu trabalho?</label>
-    <input id={'guide-question-'+suffix} value={question} onChange={event=>setQuestion(event.target.value)} maxLength={300} disabled={busy} autoComplete="off" placeholder="Pergunte sobre projetos, experiência ou processo…"/>
+    <input id={'guide-question-'+suffix} value={question} onChange={event=>setQuestion(event.target.value)} maxLength={300} disabled={busy} autoComplete="off" placeholder="Pergunte sobre meus projetos, experiências ou processos…"/>
     <button type="submit" disabled={busy||!question.trim()} aria-label="Enviar pergunta"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
   </form>;
   return <section className="portfolio-guide" aria-labelledby="portfolio-guide-title">
-    <div className="portfolio-guide__intro"><h2 id="portfolio-guide-title">Explore minha experiência</h2><p>Encontre os projetos e as decisões que mais se conectam ao que você procura.</p></div>
+    <div className="portfolio-guide__intro"><h2 id="portfolio-guide-title">Explore minha experiência</h2></div>
     <div className="portfolio-guide__entry">{field('home')}<div className="portfolio-guide__suggestions" aria-label="Sugestões de perguntas">{guideSuggestions.map(text=><button key={text} type="button" disabled={busy} onClick={()=>ask(text)}>{text}<span aria-hidden="true">↗</span></button>)}</div><p className="portfolio-guide__note">{mode==='ai'?'Assistente com IA · Respostas baseadas nos cases publicados.':'Guia baseado no conteúdo dos cases. Sem IA generativa nesta versão.'}</p></div>
     {open&&ReactDOM.createPortal(<div className="portfolio-guide__overlay" onClick={event=>{if(event.target===event.currentTarget)close();}}>
       <section className="portfolio-guide__panel" ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="guide-dialog-title">
